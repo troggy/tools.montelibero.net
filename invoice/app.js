@@ -181,6 +181,11 @@ function switchToViewMode(params) {
     viewIssuer.textContent = params.tokenIssuer;
     viewMemo.textContent = params.memo || '—';
 
+    // Update OpenGraph tags
+    const ogTitle = `${params.amount} ${params.tokenName}`;
+    document.querySelector('meta[property="og:description"]').content = ogTitle;
+    document.querySelector('meta[property="og:url"]').content = window.location.href;
+
     const uri = generateSep7Uri(params);
     paymentLinkText.textContent = uri;
     generateQRCode(uri);
