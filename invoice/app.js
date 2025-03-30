@@ -173,6 +173,7 @@ function switchToViewMode(params) {
     loadingElement.classList.remove('active');
     creationMode.style.display = 'none';
     viewMode.style.display = 'block';
+    document.querySelector('.container').classList.add('initialized');
 
     viewRecipient.textContent = params.recipient;
     viewAmount.textContent = params.amount;
@@ -282,7 +283,11 @@ function checkUrlParameters() {
     if (params.recipient && params.tokenName && params.tokenIssuer && params.amount) {
         switchToViewMode(params);
     } else {
+        // Show creation mode
         loadingElement.classList.remove('active');
+        creationMode.style.display = 'block';
+        viewMode.style.display = 'none';
+        document.querySelector('.container').classList.add('initialized');
         loadSavedValues();
     }
 }
@@ -299,4 +304,9 @@ advancedPanel.querySelector('.advanced-panel-header').addEventListener('click', 
 });
 
 // Initialize the app
-document.addEventListener('DOMContentLoaded', checkUrlParameters); 
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading state
+    loadingElement.classList.add('active');
+    // Check parameters after a brief delay to ensure DOM is ready
+    setTimeout(checkUrlParameters, 0);
+}); 

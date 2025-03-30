@@ -24,6 +24,11 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
+            display: none;
+        }
+
+        .container.initialized {
+            display: block;
         }
 
         h1 {
@@ -84,12 +89,10 @@
 
         .loading {
             display: none;
-            visibility: hidden;
         }
 
         .loading.active {
             display: block;
-            visibility: visible;
         }
 
         .invoice-details {
