@@ -1,9 +1,11 @@
 // Constants
 const MAX_MEMO_LENGTH = 28; // Maximum length for memo_text in Stellar
+const MAX_RECENT_TOKENS = 3; // Maximum number of recent tokens to show
 const STORAGE_KEYS = {
     RECIPIENT: 'stellar_invoice_recipient',
     TOKEN_NAME: 'stellar_invoice_token_name',
-    TOKEN_ISSUER: 'stellar_invoice_token_issuer'
+    TOKEN_ISSUER: 'stellar_invoice_token_issuer',
+    RECENT_TOKENS: 'stellar_invoice_recent_tokens'
 };
 
 // Base32 alphabet for Stellar addresses
@@ -17,6 +19,7 @@ const copyRecipientBtn = document.getElementById('copy-recipient');
 const copyLinkBtn = document.getElementById('copy-link');
 const openLinkBtn = document.getElementById('open-link');
 const advancedPanel = document.querySelector('.advanced-panel');
+const recentTokensContainer = document.getElementById('recent-tokens');
 
 // Form Elements
 const recipientInput = document.getElementById('recipient');
@@ -39,13 +42,58 @@ function loadSavedValues() {
     recipientInput.value = localStorage.getItem(STORAGE_KEYS.RECIPIENT) || '';
     tokenNameInput.value = localStorage.getItem(STORAGE_KEYS.TOKEN_NAME) || '';
     tokenIssuerInput.value = localStorage.getItem(STORAGE_KEYS.TOKEN_ISSUER) || '';
+    updateRecentTokensDisplay();
 }
 
-// Save values to localStorage
+// Save form values to localStorage
 function saveValues() {
     localStorage.setItem(STORAGE_KEYS.RECIPIENT, recipientInput.value);
     localStorage.setItem(STORAGE_KEYS.TOKEN_NAME, tokenNameInput.value);
     localStorage.setItem(STORAGE_KEYS.TOKEN_ISSUER, tokenIssuerInput.value);
+}
+
+// Save token pair to recent tokens
+function saveTokenPair() {
+    const recentTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_TOKENS) || '[]');
+    const newToken = {
+        name: tokenNameInput.value,
+        issuer: tokenIssuerInput.value
+    };
+    
+    // Remove if already exists
+    const existingIndex = recentTokens.findIndex(t => t.name === newToken.name && t.issuer === newToken.issuer);
+    if (existingIndex !== -1) {
+        recentTokens.splice(existingIndex, 1);
+    }
+    
+    // Add to beginning
+    recentTokens.unshift(newToken);
+    
+    // Keep only the most recent tokens
+    if (recentTokens.length > MAX_RECENT_TOKENS) {
+        recentTokens.pop();
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.RECENT_TOKENS, JSON.stringify(recentTokens));
+    updateRecentTokensDisplay();
+}
+
+// Update recent tokens display
+function updateRecentTokensDisplay() {
+    const recentTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_TOKENS) || '[]');
+    recentTokensContainer.innerHTML = '';
+    
+    recentTokens.forEach(token => {
+        const tokenElement = document.createElement('span');
+        tokenElement.className = 'recent-token';
+        tokenElement.textContent = token.name;
+        tokenElement.title = `Token: ${token.name}\nIssuer: ${token.issuer}`;
+        tokenElement.addEventListener('click', () => {
+            tokenNameInput.value = token.name;
+            tokenIssuerInput.value = token.issuer;
+        });
+        recentTokensContainer.appendChild(tokenElement);
+    });
 }
 
 // Validate Stellar address
@@ -128,7 +176,7 @@ function switchToViewMode(params) {
     viewAmount.textContent = params.amount;
     viewToken.textContent = params.tokenName;
     viewIssuer.textContent = params.tokenIssuer;
-    viewMemo.textContent = params.memo || 'No memo';
+    viewMemo.textContent = params.memo || '—';
 
     const uri = generateSep7Uri(params);
     paymentLinkText.textContent = uri;
@@ -173,8 +221,9 @@ form.addEventListener('submit', function(e) {
 
     if (!isValid) return;
 
-    // Save values to localStorage
+    // Save form values and token pair
     saveValues();
+    saveTokenPair();
 
     // Create URL parameters
     const params = {
@@ -197,6 +246,11 @@ form.addEventListener('submit', function(e) {
 // Copy recipient address to token issuer
 copyRecipientBtn.addEventListener('click', function() {
     tokenIssuerInput.value = recipientInput.value;
+    const originalTitle = copyRecipientBtn.title;
+    copyRecipientBtn.title = 'Copied!';
+    setTimeout(() => {
+        copyRecipientBtn.title = originalTitle;
+    }, 2000);
 });
 
 // Copy payment link
