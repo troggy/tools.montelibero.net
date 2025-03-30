@@ -82,6 +82,16 @@
             display: none;
         }
 
+        .loading {
+            display: none;
+            visibility: hidden;
+        }
+
+        .loading.active {
+            display: block;
+            visibility: visible;
+        }
+
         .invoice-details {
             background-color: #f8f8f8;
             padding: 20px;
@@ -382,6 +392,7 @@
 </head>
 <body>
     <div class="container">
+        <div id="loading" class="loading active"></div>
         <h1>You have requested to pay</h1>
         
         <div id="creation-mode">

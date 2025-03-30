@@ -15,6 +15,7 @@ const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const form = document.getElementById('invoice-form');
 const creationMode = document.getElementById('creation-mode');
 const viewMode = document.getElementById('view-mode');
+const loadingElement = document.getElementById('loading');
 const copyRecipientBtn = document.getElementById('copy-recipient');
 const copyLinkBtn = document.getElementById('copy-link');
 const openLinkBtn = document.getElementById('open-link');
@@ -169,6 +170,7 @@ function generateQRCode(uri) {
 
 // Switch to view mode
 function switchToViewMode(params) {
+    loadingElement.classList.remove('active');
     creationMode.style.display = 'none';
     viewMode.style.display = 'block';
 
@@ -280,6 +282,7 @@ function checkUrlParameters() {
     if (params.recipient && params.tokenName && params.tokenIssuer && params.amount) {
         switchToViewMode(params);
     } else {
+        loadingElement.classList.remove('active');
         loadSavedValues();
     }
 }
@@ -296,4 +299,4 @@ advancedPanel.querySelector('.advanced-panel-header').addEventListener('click', 
 });
 
 // Initialize the app
-checkUrlParameters(); 
+document.addEventListener('DOMContentLoaded', checkUrlParameters); 
